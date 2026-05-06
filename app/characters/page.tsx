@@ -20,16 +20,24 @@ interface Character {
 const characters: Character[] = [
   {
     id: "shark",
-    name: "鯊魚",
-    image: "/images/characters/shark.png",
-    description: "主角，海底冒險家",
-    fullDescription: "鯊魚是一隻可愛又勇敢的小鯊魚！牠住在美麗的珊瑚礁裡，最喜歡和朋友們一起冒險探索海底世界。雖然是鯊魚，但牠一點都不可怕，反而是大家最好的朋友。牠的夢想是找到傳說中的海底寶藏！",
+    name: "阿鯊",
+    image: "/images/characters/shark.jpg",
+    description: "威嚴又可愛的代表",
+    fullDescription: "鯊魚是一隻可愛又勇敢的小鯊魚！\n擅長是鋼鐵尾巴和裝可愛🤍",
+    color: "bg-blue-100 hover:bg-blue-200",
+  },
+  {
+    id: "shark-2",
+    name: "學弟鯊",
+    image: "/images/characters/shark-2.jpg",
+    description: "我弟啦",
+    fullDescription: "學弟鯊",
     color: "bg-blue-100 hover:bg-blue-200",
   },
   {
     id: "tamagoyaki",
     name: "玉子燒",
-    image: "/images/characters/tamagoyaki.png",
+    image: "/images/characters/tamagoyaki.jpg",
     description: "溫暖的料理朋友",
     fullDescription: "玉子燒是一個熱情又溫暖的角色！牠總是散發著香香的味道，讓周圍的朋友都感到幸福。玉子燒最擅長的就是照顧大家，無論是誰遇到困難，牠都會第一個伸出援手。牠的座右銘是「溫暖的心比什麼都重要」！",
     color: "bg-yellow-100 hover:bg-yellow-200",
@@ -37,7 +45,7 @@ const characters: Character[] = [
   {
     id: "milktea",
     name: "奶茶",
-    image: "/images/characters/milktea.png",
+    image: "/images/characters/milktea.jpg",
     description: "甜甜的珍珠奶茶",
     fullDescription: "奶茶是一杯超級可愛的珍珠奶茶！牠的個性溫柔又甜蜜，就像牠的味道一樣讓人感到療癒。奶茶最喜歡和朋友們聊天，分享每天發生的有趣事情。牠的夢想是讓每個人都能嚐到幸福的滋味！",
     color: "bg-amber-100 hover:bg-amber-200",
@@ -45,7 +53,7 @@ const characters: Character[] = [
   {
     id: "baoni",
     name: "宝膩",
-    image: "/images/characters/baoni.png",
+    image: "/images/characters/boboli.jpg",
     description: "軟萌的糰子精靈",
     fullDescription: "宝膩是一顆軟軟糯糯的糰子精靈！牠的外表看起來總是懶懶的，但其實內心充滿了對世界的好奇。宝膩最喜歡在陽光下打盹，然後做各種奇妙的夢。牠經常會分享自己夢境中的冒險故事給大家聽！",
     color: "bg-pink-100 hover:bg-pink-200",
@@ -53,7 +61,7 @@ const characters: Character[] = [
   {
     id: "awang",
     name: "阿汪",
-    image: "/images/characters/awang.png",
+    image: "/images/characters/awang.jpg",
     description: "忠誠的狗狗夥伴",
     fullDescription: "阿汪是一隻活潑又忠誠的小狗！牠有著毛茸茸的外表和搖搖晃晃的尾巴，看到朋友就會開心地跳來跳去。阿汪的嗅覺超級靈敏，經常在冒險中幫助大家找到正確的方向。牠最喜歡的獎勵是大家的讚美！",
     color: "bg-orange-100 hover:bg-orange-200",
@@ -61,7 +69,7 @@ const characters: Character[] = [
   {
     id: "cookie",
     name: "巧克力餅乾",
-    image: "/images/characters/cookie.png",
+    image: "/images/characters/choco_cookie.jpg",
     description: "酥脆的甜點朋友",
     fullDescription: "巧克力餅乾是一塊香噴噴的餅乾！牠看起來有點酷酷的，但其實內心超級柔軟（就像牠的巧克力豆一樣會融化）。餅乾最喜歡收集各種有趣的東西，牠的收藏室裡有很多神奇的寶貝。牠是團隊中最可靠的情報專家！",
     color: "bg-amber-100 hover:bg-amber-200",
@@ -69,7 +77,7 @@ const characters: Character[] = [
   {
     id: "ebifly",
     name: "炸蝦",
-    image: "/images/characters/ebifly.png",
+    image: "/images/characters/ebifurai.png",
     description: "神秘的新角色",
     fullDescription: "這個角色還沒有解鎖，敬請期待！",
     color: "bg-gray-200",
@@ -172,7 +180,7 @@ export default function CharactersPage() {
             </div>
           </DialogHeader>
           <div className="mt-4">
-            <p className="text-foreground leading-relaxed">
+            <p className="text-foreground leading-relaxed whitespace-pre-line">
               {selectedCharacter?.fullDescription}
             </p>
           </div>
