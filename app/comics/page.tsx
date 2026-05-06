@@ -30,10 +30,18 @@ export default function ComicsPage() {
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [loading, setLoading] = useState(true)
 
-  // 隨機選擇阿鯊的狀態
-  const getRandomStatus = () => {
-    const statuses = ["努力", "構想", "摸魚"]
-    return statuses[Math.floor(Math.random() * statuses.length)]
+  // 隨機選擇阿鯊的狀態和對應圖片
+  const getRandomStatusWithImage = () => {
+    const options = [
+      { status: "努力", img: 0 },
+      { status: "構想", img: 1 },
+      { status: "摸魚", img: 2 }
+    ]
+    const selected = options[Math.floor(Math.random() * options.length)]
+    return {
+      description: `阿鯊正在${selected.status}...`,
+      image: `/images/comics/no-page-img/${selected.img}.png`
+    }
   }
 
   // 載入所有章節資料
@@ -63,29 +71,32 @@ export default function ComicsPage() {
               })
             } else {
               // 圖片不存在，使用預設圖片和隨機訊息
+              const randomStatus = getRandomStatusWithImage()
               loadedChapters.push({
                 id: i,
                 title: "敬請期待",
-                description: `阿鯊正在${getRandomStatus()}...`,
-                image: "/images/comics/no-page.png",
+                description: randomStatus.description,
+                image: randomStatus.image,
               })
             }
           } else {
             // JSON 不存在，使用預設值
+            const randomStatus = getRandomStatusWithImage()
             loadedChapters.push({
               id: i,
               title: "敬請期待",
-              description: `阿鯊正在${getRandomStatus()}...`,
-              image: "/images/comics/no-page.png",
+              description: randomStatus.description,
+              image: randomStatus.image,
             })
           }
         } catch (error) {
           console.error(`載入章節 ${i} 失敗:`, error)
+          const randomStatus = getRandomStatusWithImage()
           loadedChapters.push({
             id: i,
             title: "敬請期待",
-            description: `阿鯊正在${getRandomStatus()}...`,
-            image: "/images/comics/no-page.png",
+            description: randomStatus.description,
+            image: randomStatus.image,
           })
         }
       }
@@ -188,14 +199,29 @@ export default function ComicsPage() {
             {/* Comic Image */}
             <div className="aspect-[3/4] md:aspect-[4/3] bg-muted flex items-center justify-center p-4">
               {currentChapter?.image ? (
-                <div className="relative w-full h-full">
-                  <Image
-                    src={currentChapter.image}
-                    alt={currentChapter.title}
-                    fill
-                    className="object-contain rounded-lg"
-                    priority
-                  />
+                <div className="relative w-full h-full flex items-center justify-center">
+                  {currentChapter.image.includes('/no-page-img/') ? (
+                    // 預設圖片：顯示為原始尺寸的 2 倍 (126x126 -> 252x252)
+                    <div className="relative" style={{ width: '252px', height: '252px' }}>
+                      <Image
+                        src={currentChapter.image}
+                        alt={currentChapter.title}
+                        width={252}
+                        height={252}
+                        className="object-contain"
+                        priority
+                      />
+                    </div>
+                  ) : (
+                    // 一般漫畫圖片：填滿容器
+                    <Image
+                      src={currentChapter.image}
+                      alt={currentChapter.title}
+                      fill
+                      className="object-contain rounded-lg"
+                      priority
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="w-full h-full bg-card rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground">
