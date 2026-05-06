@@ -107,7 +107,7 @@ export default function EventsPage() {
                     rel="noopener noreferrer"
                     className="flex flex-col items-center p-6 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors group"
                   >
-                    {contact.type === "line" ? (
+                    {contact.type === "line" && contact.qrcode ? (
                       <>
                         <div className="w-32 h-32 mb-4 bg-white rounded-lg p-2">
                           <Image
@@ -125,9 +125,11 @@ export default function EventsPage() {
                           {contact.value}
                         </span>
                       </>
-                    ) : (
+                    ) : contact.icon ? (
                       <>
-                        <contact.icon className="w-12 h-12 text-primary mb-4 group-hover:scale-110 transition-transform" />
+                        <div className="w-32 h-32 mb-4 flex items-center justify-center">
+                          <contact.icon className="w-32 h-32 text-primary group-hover:scale-110 transition-transform" />
+                        </div>
                         <span className="text-sm font-medium text-foreground">
                           {contact.label}
                         </span>
@@ -135,7 +137,7 @@ export default function EventsPage() {
                           {contact.value}
                         </span>
                       </>
-                    )}
+                    ) : null}
                   </a>
                 ))}
               </div>
