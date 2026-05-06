@@ -1,38 +1,33 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, MapPin, Clock, Mail, MessageCircle, Globe } from "lucide-react"
+import { Calendar, MapPin, Clock, MessageCircle, Globe } from "lucide-react"
+import Image from "next/image"
 
 const events = [
   {
     id: 1,
-    title: "春季大冒險活動",
-    description: "和鯊魚與朋友們一起參加春季特別活動！完成任務就能獲得限定周邊商品和角色貼紙。活動期間還有特別的限定漫畫內容喔！",
-    date: "2024年3月1日 - 3月31日",
-    location: "線上活動",
-    status: "即將開始",
+    title: "尚未有活動，敬請期待！",
+    description: "尚未有活動，敬請期待！",
+    date: "-",
+    location: "-",
+    status: "-",
     statusColor: "bg-accent text-accent-foreground",
     highlights: [
-      "限定角色貼紙",
-      "特別漫畫內容",
-      "抽獎活動",
+      "竟然沒有活動！阿鯊和朋友們太忙了，正在努力策劃中！",
     ],
   },
 ]
 
 const contactInfo = [
   {
-    icon: Mail,
-    label: "電子郵件",
-    value: "hello@sharkjump.example.com",
-    href: "mailto:hello@sharkjump.example.com",
+    type: "line",
+    label: "LINE 官方帳號",
+    value: "@604dpuva",
+    qrcode: "https://qr-official.line.me/gs/M_604dpuva_GW.png?oat_content=qr",
+    href: "https://line.me/R/ti/p/@604dpuva",
   },
   {
-    icon: MessageCircle,
-    label: "社群媒體",
-    value: "@SharkJumpComic",
-    href: "#",
-  },
-  {
+    type: "website",
     icon: Globe,
     label: "官方網站",
     value: "www.sharkjump.example.com",
@@ -103,20 +98,44 @@ export default function EventsPage() {
               <p className="text-muted-foreground mb-6">
                 有任何問題或建議嗎？歡迎透過以下方式聯絡我們！我們很樂意聽到你的聲音 🦈
               </p>
-              <div className="grid sm:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-2 gap-6">
                 {contactInfo.map((contact) => (
                   <a
                     key={contact.label}
                     href={contact.href}
-                    className="flex flex-col items-center p-4 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors group"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center p-6 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors group"
                   >
-                    <contact.icon className="w-8 h-8 text-primary mb-2 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-medium text-foreground">
-                      {contact.label}
-                    </span>
-                    <span className="text-xs text-muted-foreground mt-1 text-center">
-                      {contact.value}
-                    </span>
+                    {contact.type === "line" ? (
+                      <>
+                        <div className="w-32 h-32 mb-4 bg-white rounded-lg p-2">
+                          <Image
+                            src={contact.qrcode}
+                            alt="LINE QR Code"
+                            width={112}
+                            height={112}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <span className="text-sm font-medium text-foreground">
+                          {contact.label}
+                        </span>
+                        <span className="text-xs text-muted-foreground mt-1 text-center">
+                          {contact.value}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <contact.icon className="w-12 h-12 text-primary mb-4 group-hover:scale-110 transition-transform" />
+                        <span className="text-sm font-medium text-foreground">
+                          {contact.label}
+                        </span>
+                        <span className="text-xs text-muted-foreground mt-1 text-center">
+                          {contact.value}
+                        </span>
+                      </>
+                    )}
                   </a>
                 ))}
               </div>
