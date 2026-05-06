@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
@@ -23,7 +23,8 @@ interface Chapter {
 // 定義可用的章節數量
 const TOTAL_CHAPTERS = 5
 
-export default function ComicsPage() {
+// 將使用 useSearchParams 的邏輯分離到子組件
+function ComicsContent() {
   const searchParams = useSearchParams()
   const chapterParam = searchParams.get("chapter")
   const [selectedChapter, setSelectedChapter] = useState(1)
@@ -265,3 +266,19 @@ export default function ComicsPage() {
     </div>
   )
 }
+
+// 主組件：使用 Suspense 包裹 ComicsContent
+export default function ComicsPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <p className="text-muted-foreground">載入中...</p>
+        </div>
+      </div>
+    }>
+      <ComicsContent />
+    </Suspense>
+  )
+}
+
