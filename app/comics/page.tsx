@@ -30,42 +30,66 @@ export default function ComicsPage() {
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [loading, setLoading] = useState(true)
 
+  // 隨機選擇阿鯊的狀態
+  const getRandomStatus = () => {
+    const statuses = ["努力", "構想", "摸魚"]
+    return statuses[Math.floor(Math.random() * statuses.length)]
+  }
+
   // 載入所有章節資料
   useEffect(() => {
     async function loadChapters() {
       const loadedChapters: Chapter[] = []
-      
+
       for (let i = 1; i <= TOTAL_CHAPTERS; i++) {
         try {
           const response = await fetch(`/images/comics/chapter_${i}/content.json`)
           if (response.ok) {
             const data: ChapterData = await response.json()
-            loadedChapters.push({
-              id: i,
-              title: data.title,
-              description: data.description,
-              image: `/images/comics/chapter_${i}/${data.img}`,
-            })
+            const imagePath = `/images/comics/chapter_${i}/${data.img}`
+
+            // 檢查圖片是否存在
+            const imageExists = await fetch(imagePath, { method: 'HEAD' })
+              .then(res => res.ok)
+              .catch(() => false)
+
+            if (imageExists) {
+              // 圖片存在，使用 JSON 中的資料
+              loadedChapters.push({
+                id: i,
+                title: data.title,
+                description: data.description,
+                image: imagePath,
+              })
+            } else {
+              // 圖片不存在，使用預設圖片和隨機訊息
+              loadedChapters.push({
+                id: i,
+                title: "敬請期待",
+                description: `阿鯊正在${getRandomStatus()}...`,
+                image: "/images/comics/no-page.png",
+              })
+            }
           } else {
-            // 如果檔案不存在，使用預設值
+            // JSON 不存在，使用預設值
             loadedChapters.push({
               id: i,
-              title: `第 ${i} 話`,
-              description: "章節內容載入中...",
-              image: "",
+              title: "敬請期待",
+              description: `阿鯊正在${getRandomStatus()}...`,
+              image: "/images/comics/no-page.png",
             })
           }
         } catch (error) {
           console.error(`載入章節 ${i} 失敗:`, error)
           loadedChapters.push({
             id: i,
-            title: `第 ${i} 話`,
-            description: "章節內容載入失敗",
-            image: "",
+            title: "敬請期待",
+            description: `阿鯊正在${getRandomStatus()}...`,
+            image: "/images/comics/no-page.png",
           })
         }
       }
-      
+
       setChapters(loadedChapters)
       setLoading(false)
     }
@@ -179,10 +203,7 @@ export default function ComicsPage() {
                   <p className="text-lg font-medium">第 {selectedChapter} 話</p>
                   <p className="text-sm mt-2">{currentChapter?.title}</p>
                   <p className="text-xs mt-4 text-muted-foreground/70">
-                    圖片檔案：{currentChapter?.image}
-                  </p>
-                  <p className="text-xs mt-1 text-muted-foreground/70">
-                    請將圖片放入 public{currentChapter?.image}
+                    章節內容載入失敗
                   </p>
                 </div>
               )}
