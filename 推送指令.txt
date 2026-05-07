@@ -1,0 +1,93 @@
+# 🚀 鯊魚 JUMP - 推送到 GitHub 指令
+
+## 📋 步驟說明
+
+### 步驟 1：在 GitHub 建立倉庫
+瀏覽器已經打開 GitHub 建立倉庫的頁面，請：
+
+1. **Repository name** 輸入：`boboli` 或 `shark-jump`
+2. 選擇 **Public**（公開）
+3. ⚠️ **不要勾選任何選項**（README、.gitignore、license 都不要勾選）
+4. 點擊 **「Create repository」**
+
+建立完成後，複製頁面上顯示的倉庫網址（類似：`https://github.com/您的帳號/boboli.git`）
+
+---
+
+## 💻 步驟 2：執行以下指令
+
+在建立好 GitHub 倉庫後，**請將下面第一行指令中的網址換成您的倉庫網址**，然後依序執行：
+
+```powershell
+# ⚠️ 重要：請將下面的網址換成您剛才複製的 GitHub 倉庫網址
+git remote add origin https://github.com/您的帳號/boboli.git
+
+# 將分支改名為 main
+git branch -M main
+
+# 推送到 GitHub
+git push -u origin main
+```
+
+---
+
+## 📝 範例
+
+假設您的 GitHub 帳號是 `alice`，倉庫名稱是 `boboli`，那麼指令應該是：
+
+```powershell
+git remote add origin https://github.com/alice/boboli.git
+git branch -M main
+git push -u origin main
+```
+
+---
+
+## ✅ 推送成功後
+
+當您看到類似這樣的訊息，就表示成功了：
+
+```
+Enumerating objects: ...
+Counting objects: 100% ...
+Writing objects: 100% ...
+To https://github.com/您的帳號/boboli.git
+ * [new branch]      main -> main
+```
+
+---
+
+## 🌐 步驟 3：部署到 Vercel
+
+推送成功後，執行這個指令打開 Vercel：
+
+```powershell
+Start-Process "https://vercel.com/new"
+```
+
+在 Vercel 網站上：
+1. 點擊「Continue with GitHub」登入
+2. 找到您的倉庫（boboli）並點擊「Import」
+3. 直接點擊「Deploy」（不需要改任何設定）
+4. 等待 1-3 分鐘，完成！
+
+---
+
+## 🆘 遇到問題？
+
+### 如果出現「remote origin already exists」錯誤：
+```powershell
+git remote remove origin
+git remote add origin https://github.com/您的帳號/boboli.git
+```
+
+### 如果需要輸入 GitHub 帳號密碼：
+- 現在 GitHub 需要使用 Personal Access Token（不能用密碼）
+- 前往：https://github.com/settings/tokens
+- 建立一個新的 token
+- 在終端機中輸入帳號和 token（當作密碼）
+
+---
+
+**準備好了嗎？複製上面的指令開始吧！** 🚀
+

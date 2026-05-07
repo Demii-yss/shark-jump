@@ -71,7 +71,7 @@ const characters: Character[] = [
     name: "巧克力餅乾",
     image: "/images/characters/choco_cookie.jpg",
     description: "酥脆的點心",
-    fullDescription: "巧克力餅乾是一塊脆脆的餅乾！看起來有點酷酷的呢！",
+    fullDescription: "巧克力餅乾是一塊脆脆的餅乾！\n看起來有點酷酷的呢！",
     color: "bg-amber-100 hover:bg-amber-200",
   },
   {
@@ -79,9 +79,11 @@ const characters: Character[] = [
     name: "炸蝦",
     image: "/images/characters/ebifurai.png",
     description: "神秘的新角色",
-    fullDescription: "這個角色還沒有解鎖，敬請期待！",
+    fullDescription: "" +
+        "炸蝦因為太硬而被吃剩，跟炸豬排為心靈相通的好朋友。\n" +
+        "羨慕在便當裏最受歡迎的章魚，希望自己有一天會被吃掉。\n" +
+        "下一步是成為 idol！",
     color: "bg-gray-200",
-    locked: true,
   },
   {
     id: "tokage",
@@ -154,7 +156,7 @@ export default function CharactersPage() {
 
       {/* Character Detail Dialog */}
       <Dialog open={!!selectedCharacter} onOpenChange={() => setSelectedCharacter(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <div className="flex items-center gap-4">
               <div

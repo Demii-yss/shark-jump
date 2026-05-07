@@ -6,6 +6,14 @@ import { BookOpen, Calendar, User } from "lucide-react"
 const newsItems = [
   {
     id: 1,
+    title: "首次線下見面會即將舉辦！時間訂在 2026-05-08！",
+    description: "即將召開首次的線下見面會，邀請所有阿鯊的朋友們一起來參加！會場有豐富的活動和驚喜等著大家！",
+    type: "event",
+    date: "2026-05-07",
+    link: "/events",
+  },
+  {
+    id: 2,
     title: "鯊魚 JUMP 第二話公開！",
     description: "大家都喜歡的新朋友登場了！是誰呢？",
     type: "comic",
