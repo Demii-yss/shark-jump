@@ -1,6 +1,6 @@
-# 🚀 鯊魚 JUMP - 推送到 GitHub 指令
+#  鯊魚 JUMP - 推送到 GitHub 指令
 
-## 📋 步驟說明
+##  步驟說明
 
 ### 步驟 1：在 GitHub 建立倉庫
 瀏覽器已經打開 GitHub 建立倉庫的頁面，請：
@@ -14,7 +14,7 @@
 
 ---
 
-## 💻 步驟 2：執行以下指令
+##  步驟 2：執行以下指令
 
 在建立好 GitHub 倉庫後，**請將下面第一行指令中的網址換成您的倉庫網址**，然後依序執行：
 
@@ -31,7 +31,7 @@ git push -u origin main
 
 ---
 
-## 📝 範例
+##  範例
 
 假設您的 GitHub 帳號是 `alice`，倉庫名稱是 `boboli`，那麼指令應該是：
 
@@ -57,7 +57,7 @@ To https://github.com/您的帳號/boboli.git
 
 ---
 
-## 🌐 步驟 3：部署到 Vercel
+##  步驟 3：部署到 Vercel
 
 推送成功後，執行這個指令打開 Vercel：
 
@@ -73,7 +73,7 @@ Start-Process "https://vercel.com/new"
 
 ---
 
-## 🆘 遇到問題？
+##  遇到問題？
 
 ### 如果出現「remote origin already exists」錯誤：
 ```powershell
@@ -89,5 +89,4 @@ git remote add origin https://github.com/您的帳號/boboli.git
 
 ---
 
-**準備好了嗎？複製上面的指令開始吧！** 🚀
-
+**準備好了嗎？複製上面的指令開始吧！** 

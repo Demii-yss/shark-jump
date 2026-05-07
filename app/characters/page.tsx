@@ -78,7 +78,7 @@ const characters: Character[] = [
     id: "ebifly",
     name: "炸蝦",
     image: "/images/characters/ebifurai.png",
-    description: "神秘的新角色",
+    description: "夢想成為偶像",
     fullDescription: "" +
         "炸蝦因為太硬而被吃剩，跟炸豬排為心靈相通的好朋友。\n" +
         "羨慕在便當裏最受歡迎的章魚，希望自己有一天會被吃掉。\n" +
