@@ -15,3 +15,8 @@ node_modules
 .DS_Store
 .vercel
 .env*.local
+.idea/
+upload-to-drive/
+shark-jump-data.json
+test-sheets.js
+*.html

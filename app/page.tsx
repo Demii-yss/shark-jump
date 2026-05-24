@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import Link from "next/link"
-import Image from "next/image"
 import { BookOpen, Calendar, User, Megaphone } from "lucide-react"
+import { getCachedData } from "@/lib/cache"
+import { ImageWithLoader } from "@/components/ui/image-with-loader"
 
 interface NewsItem {
     id: number
@@ -20,69 +21,6 @@ interface NewsItem {
     image?: string
 }
 
-const newsItems: NewsItem[] = [
-    {
-        id: 0,
-        title: "新角色介紹 - 炸蝦",
-        description: "夢想成為偶像的炸蝦登場！因為太硬而被吃剩，希望自己有一天會被吃掉！",
-        type: "character",
-        date: "2026-05-07",
-        link: "/characters",
-    },
-    {
-        id: 1,
-        title: "首次見面會明晚舉行！學弟鯊正在準備什麼呢？",
-        description: "特別的驚喜正在醞釀中！",
-        type: "announcement",
-        date: "2026-05-07",
-        showDialog: true,
-        link: "/events",
-        image: "/images/news/0.jpg",
-        fullDescription: "" +
-            "學弟鯊似乎正在準備一個特別的驚喜給大家！\n" +
-            "大家都準備好了嗎？",
-    },
-    {
-        id: 2,
-        title: "首次線下見面會即將舉辦！時間訂在 2026-05-08！",
-        description: "即將召開首次的線下見面會，邀請所有阿鯊的朋友們一起來參加！會場有豐富的活動和驚喜等著大家！",
-        type: "event",
-        date: "2026-05-07",
-        link: "/events",
-    },
-    {
-        id: 3,
-        title: "鯊魚 JUMP 第二話公開！",
-        description: "大家都喜歡的新朋友登場了！是誰呢？",
-        type: "comic",
-        date: "2024-05-06",
-        link: "/comics?chapter=2",
-    },
-    {
-        id: 4,
-        title: "新角色介紹 - 玉子燒",
-        description: "心情總是很好的玉子燒登場！背上的玉子燒香香的，讓大家忍不住想吃一口！",
-        type: "character",
-        date: "2026-05-02",
-        link: "/characters",
-    },
-    {
-        id: 5,
-        title: "鯊魚 JUMP 第一話公開！",
-        description: "開篇就遇到大麻煩！究竟阿鯊是怎麼解決的呢？",
-        type: "comic",
-        date: "2026-04-30",
-        link: "/comics?chapter=1",
-    },
-    {
-        id: 6,
-        title: "新角色介紹 - 奶茶",
-        description: "噗！奶茶身體柔軟又有彈性，非常擅長打滾！很喜歡爬到朋友身上撒嬌！",
-        type: "character",
-        date: "2026-04-30",
-        link: "/characters",
-    },
-]
 
 function getTypeIcon(type: string) {
     switch (type) {
@@ -116,18 +54,68 @@ function getTypeBadge(type: string) {
 
 export default function HomePage() {
     const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
+    const [newsItems, setNewsItems] = useState<NewsItem[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    // 從 API 載入新聞資料
+    useEffect(() => {
+        async function loadNews() {
+            try {
+                const result = await getCachedData('news-data-v1', async () => {
+                    const response = await fetch('/api/news')
+                    return await response.json()
+                })
+
+                if (result.success) {
+                    setNewsItems(result.data)
+                } else {
+                    setError('載入新聞失敗')
+                }
+            } catch (err) {
+                console.error('載入新聞資料時發生錯誤:', err)
+                setError('載入新聞失敗')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadNews()
+    }, [])
+
+    if (loading) {
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <div className="text-center">
+                    <p className="text-muted-foreground">載入中...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <div className="text-center">
+                    <p className="text-red-500">{error}</p>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Hero Section */}
             <div className="text-center mb-12">
                 <div className="inline-block mb-4">
-                    <Image
+                    <ImageWithLoader
                         src="/images/home/title.png"
                         alt="鯊魚 JUMP"
                         width={64}
                         height={64}
                         className="w-16 h-auto"
+                        containerClassName="rounded-lg"
+                        overlayClassName="rounded-lg"
                     />
                 </div>
                 <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
@@ -221,15 +209,15 @@ export default function HomePage() {
 
                     {/* 圖片區域 */}
                     {selectedNews?.image && (
-                        <div className="relative w-full rounded-lg overflow-hidden bg-muted">
-                            <Image
-                                src={selectedNews.image}
-                                alt={selectedNews.title}
-                                width={800}
-                                height={600}
-                                className="w-full h-auto object-contain"
-                            />
-                        </div>
+                        <ImageWithLoader
+                            src={selectedNews.image}
+                            alt={selectedNews.title}
+                            width={800}
+                            height={600}
+                            className="w-full h-auto object-contain"
+                            containerClassName="w-full rounded-lg overflow-hidden bg-muted"
+                            overlayClassName="rounded-lg"
+                        />
                     )}
 
                     <div className="mt-4">

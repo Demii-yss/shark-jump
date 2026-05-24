@@ -6,129 +6,140 @@ import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { getCachedData } from "@/lib/cache"
 
-interface ChapterData {
-  title: string
-  description: string
-  img: string
-}
+const loadedComicImages = new Set<string>()
 
 interface Chapter {
   id: number
   title: string
   description: string
   image: string
+  isPlaceholder?: boolean
 }
 
-// 定義可用的章節數量
-const TOTAL_CHAPTERS = 5
+const DEFAULT_TOTAL_CHAPTERS = 5
+const PLACEHOLDER_OPTIONS = [
+  { status: "努力", img: 0 },
+  { status: "構想", img: 1 },
+  { status: "摸魚", img: 2 },
+]
 
 // 將使用 useSearchParams 的邏輯分離到子組件
 function ComicsContent() {
   const searchParams = useSearchParams()
   const chapterParam = searchParams.get("chapter")
-  const [selectedChapter, setSelectedChapter] = useState(1)
+  const [selectedChapter, setSelectedChapter] = useState(0)
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [loading, setLoading] = useState(true)
+  const [imageLoading, setImageLoading] = useState<Record<number, boolean>>({})
 
-  // 隨機選擇阿鯊的狀態和對應圖片
-  const getRandomStatusWithImage = () => {
-    const options = [
-      { status: "努力", img: 0 },
-      { status: "構想", img: 1 },
-      { status: "摸魚", img: 2 }
-    ]
-    const selected = options[Math.floor(Math.random() * options.length)]
+  // 根據章節索引取得對應的站位文案與圖片（0~2 圖與文案一一對應）
+  const getPlaceholderStatusWithImage = (index: number) => {
+    const selected = PLACEHOLDER_OPTIONS[index % PLACEHOLDER_OPTIONS.length]
     return {
       description: `阿鯊正在${selected.status}...`,
       image: `/images/comics/no-page-img/${selected.img}.png`
     }
   }
 
-  // 載入所有章節資料
+  const buildPlaceholderChapters = (count: number, startIndex = 0): Chapter[] => {
+    return Array.from({ length: count }, (_, offset) => {
+      const chapterIndex = startIndex + offset
+      const placeholder = getPlaceholderStatusWithImage(chapterIndex)
+
+      return {
+        id: chapterIndex,
+        title: "敬請期待",
+        description: placeholder.description,
+        image: placeholder.image,
+        isPlaceholder: true,
+      }
+    })
+  }
+
+  // 從 API 載入漫畫資料（使用快取）
   useEffect(() => {
     async function loadChapters() {
-      const loadedChapters: Chapter[] = []
+      try {
+        // 使用快取，避免重複載入
+        const result = await getCachedData('comics-data-v2', async () => {
+          const response = await fetch('/api/comics')
+          return await response.json()
+        })
 
-      for (let i = 1; i <= TOTAL_CHAPTERS; i++) {
-        try {
-          const response = await fetch(`/images/comics/chapter_${i}/content.json`)
-          if (response.ok) {
-            const data: ChapterData = await response.json()
-            const imagePath = `/images/comics/chapter_${i}/${data.img}`
+        if (result.success) {
+          // 將 API 資料轉換為章節格式
+          const loadedChapters = result.data.map((comic: any) => ({
+            id: comic.id,
+            title: comic.title,
+            description: comic.description,
+            image: comic.image,
+          }))
 
-            // 檢查圖片是否存在
-            const imageExists = await fetch(imagePath, { method: 'HEAD' })
-              .then(res => res.ok)
-              .catch(() => false)
+          const totalChapters = Math.max(
+            Number(result.totalChapters) || 0,
+            loadedChapters.length,
+            loadedChapters.length > 0 ? 0 : DEFAULT_TOTAL_CHAPTERS
+          )
 
-            if (imageExists) {
-              // 圖片存在，使用 JSON 中的資料
-              loadedChapters.push({
-                id: i,
-                title: data.title,
-                description: data.description,
-                image: imagePath,
-              })
-            } else {
-              // 圖片不存在，使用預設圖片和隨機訊息
-              const randomStatus = getRandomStatusWithImage()
-              loadedChapters.push({
-                id: i,
-                title: "敬請期待",
-                description: randomStatus.description,
-                image: randomStatus.image,
-              })
-            }
-          } else {
-            // JSON 不存在，使用預設值
-            const randomStatus = getRandomStatusWithImage()
-            loadedChapters.push({
-              id: i,
-              title: "敬請期待",
-              description: randomStatus.description,
-              image: randomStatus.image,
-            })
-          }
-        } catch (error) {
-          console.error(`載入章節 ${i} 失敗:`, error)
-          const randomStatus = getRandomStatusWithImage()
-          loadedChapters.push({
-            id: i,
-            title: "敬請期待",
-            description: randomStatus.description,
-            image: randomStatus.image,
-          })
+          const placeholderChapters = buildPlaceholderChapters(
+            Math.max(totalChapters - loadedChapters.length, 0),
+            loadedChapters.length
+          )
+
+          const allChapters = [...loadedChapters, ...placeholderChapters]
+          setChapters(allChapters)
+
+          const requestedChapterNumber = chapterParam ? parseInt(chapterParam) : NaN
+          const requestedIndex = Number.isNaN(requestedChapterNumber)
+            ? -1
+            : Math.max(requestedChapterNumber - 1, 0)
+          const targetId = allChapters[requestedIndex]?.id ?? allChapters[0]?.id ?? 0
+          setSelectedChapter(targetId)
+        } else {
+          // 如果沒有資料，顯示預設內容
+          const defaultChapters = buildPlaceholderChapters(DEFAULT_TOTAL_CHAPTERS)
+          setChapters(defaultChapters)
+          setSelectedChapter(defaultChapters[0].id)
         }
+      } catch (error) {
+        console.error('載入漫畫資料失敗:', error)
+        // 錯誤時顯示預設內容
+        const defaultChapters = buildPlaceholderChapters(DEFAULT_TOTAL_CHAPTERS)
+        setChapters(defaultChapters)
+        setSelectedChapter(defaultChapters[0].id)
+      } finally {
+        setLoading(false)
       }
-
-      setChapters(loadedChapters)
-      setLoading(false)
     }
 
     loadChapters()
-  }, [])
-
-  useEffect(() => {
-    if (chapterParam) {
-      const chapterNum = parseInt(chapterParam)
-      if (chapterNum >= 1 && chapterNum <= TOTAL_CHAPTERS) {
-        setSelectedChapter(chapterNum)
-      }
-    }
   }, [chapterParam])
 
   const currentChapter = chapters.find((c) => c.id === selectedChapter)
+  const currentIndex = chapters.findIndex((c) => c.id === selectedChapter)
+
+  useEffect(() => {
+    if (!currentChapter?.image) {
+      return
+    }
+
+    setImageLoading((prev) => ({
+      ...prev,
+      [selectedChapter]: loadedComicImages.has(currentChapter.image) ? false : true,
+    }))
+  }, [selectedChapter, currentChapter?.image])
 
   const goToPrevious = () => {
-    if (selectedChapter > 1) {
-      setSelectedChapter(selectedChapter - 1)
+    if (currentIndex > 0) {
+      setSelectedChapter(chapters[currentIndex - 1].id)
     }
   }
 
   const goToNext = () => {
-    if (selectedChapter < chapters.length) {
-      setSelectedChapter(selectedChapter + 1)
+    if (currentIndex >= 0 && currentIndex < chapters.length - 1) {
+      setSelectedChapter(chapters[currentIndex + 1].id)
     }
   }
 
@@ -150,7 +161,7 @@ function ComicsContent() {
 
       <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
         {/* Chapter List - Sidebar */}
-        <div className="lg:w-72 flex-shrink-0">
+        <div className="lg:w-72 shrink-0">
           <div className="bg-card rounded-xl border-2 border-border overflow-hidden sticky top-24">
             <div className="bg-primary/10 px-4 py-3 border-b border-border">
               <h2 className="font-bold text-foreground">章節總覽</h2>
@@ -198,9 +209,19 @@ function ComicsContent() {
             </div>
 
             {/* Comic Image */}
-            <div className="aspect-[3/4] md:aspect-[4/3] bg-muted flex items-center justify-center p-4">
+            <div className="min-h-[420px] md:min-h-[520px] bg-muted flex items-center justify-center p-4 relative">
               {currentChapter?.image ? (
-                <div className="relative w-full h-full flex items-center justify-center">
+                <div className="relative w-full min-h-[388px] md:min-h-[488px] flex items-center justify-center">
+                  {/* 載入動畫 */}
+                  {imageLoading[selectedChapter] !== false && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-sm text-muted-foreground">載入中...</p>
+                      </div>
+                    </div>
+                  )}
+
                   {currentChapter.image.includes('/no-page-img/') ? (
                     // 預設圖片：顯示為原始尺寸的 2 倍 (126x126 -> 252x252)
                     <div className="relative" style={{ width: '252px', height: '252px' }}>
@@ -209,25 +230,41 @@ function ComicsContent() {
                         alt={currentChapter.title}
                         width={252}
                         height={252}
-                        className="object-contain"
+                        className={cn(
+                          "object-contain transition-opacity duration-300",
+                          imageLoading[selectedChapter] === false ? "opacity-100" : "opacity-0"
+                        )}
                         priority
+                        onLoad={() => {
+                          loadedComicImages.add(currentChapter.image)
+                          setImageLoading(prev => ({ ...prev, [selectedChapter]: false }))
+                        }}
+                        onError={() => setImageLoading(prev => ({ ...prev, [selectedChapter]: false }))}
                       />
                     </div>
                   ) : (
-                    // 一般漫畫圖片：填滿容器
-                    <Image
+                    // 一般漫畫圖片：使用原生 img 提高 Google Drive 相容性
+                    <img
+                      key={currentChapter.image}
                       src={currentChapter.image}
                       alt={currentChapter.title}
-                      fill
-                      className="object-contain rounded-lg"
-                      priority
+                      referrerPolicy="no-referrer"
+                      className={cn(
+                        "max-w-full max-h-[488px] object-contain rounded-lg transition-opacity duration-300",
+                        imageLoading[selectedChapter] === false ? "opacity-100" : "opacity-0"
+                      )}
+                      onLoad={() => {
+                        loadedComicImages.add(currentChapter.image)
+                        setImageLoading(prev => ({ ...prev, [selectedChapter]: false }))
+                      }}
+                      onError={() => setImageLoading(prev => ({ ...prev, [selectedChapter]: false }))}
                     />
                   )}
                 </div>
               ) : (
                 <div className="w-full h-full bg-card rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground">
                   <span className="text-8xl mb-4">🦈</span>
-                  <p className="text-lg font-medium">第 {selectedChapter} 話</p>
+                  <p className="text-lg font-medium">第 {currentIndex >= 0 ? currentIndex + 1 : selectedChapter + 1} 話</p>
                   <p className="text-sm mt-2">{currentChapter?.title}</p>
                   <p className="text-xs mt-4 text-muted-foreground/70">
                     章節內容載入失敗
@@ -241,19 +278,19 @@ function ComicsContent() {
               <Button
                 variant="outline"
                 onClick={goToPrevious}
-                disabled={selectedChapter === 1}
+                disabled={currentIndex <= 0}
                 className="gap-2"
               >
                 <ChevronLeft className="w-4 h-4" />
                 上一話
               </Button>
               <span className="text-sm text-muted-foreground">
-                {selectedChapter} / {chapters.length}
+                {currentIndex >= 0 ? currentIndex + 1 : 1} / {chapters.length}
               </span>
               <Button
                 variant="outline"
                 onClick={goToNext}
-                disabled={selectedChapter === chapters.length}
+                disabled={currentIndex < 0 || currentIndex >= chapters.length - 1}
                 className="gap-2"
               >
                 下一話

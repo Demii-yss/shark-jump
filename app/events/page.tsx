@@ -1,27 +1,24 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, MapPin, Clock, MessageCircle, Globe } from "lucide-react"
-import Image from "next/image"
+import { getCachedData } from "@/lib/cache"
+import { ImageWithLoader } from "@/components/ui/image-with-loader"
 
-const events = [
-    {
-        id: 1,
-        title: "首次線下見面會",
-        description: "" +
-            "即將召開首次的線下見面會，邀請所有阿鯊的朋友們一起來參加！\n" +
-            "預計會有為第一位鯊鯊老師的鐵粉準備的特別活動和驚喜！",
-        date: "2026-05-08 晚上",
-        location: "宝膩秘密基地",
-        status: "即將到來",
-        statusColor: "bg-accent text-accent-foreground",
-        highlights: [
-            "會場提前開放，有豐富的活動和驚喜等著大家！",
-            "請務必整理好身體和心情，香噴噴又開心地參加！",
-            "活動結束後有晚餐的聚會，讓我們一起吃吃喝喝聊聊天！",
-        ],
-    },
-]
+interface Event {
+    id: number
+    title: string
+    description: string
+    date: string
+    location: string
+    status: string
+    statusColor: string
+    highlights: string[]
+}
 
+// 聯絡資訊保持靜態
 const contactInfo = [
     {
         type: "line",
@@ -32,7 +29,6 @@ const contactInfo = [
     },
     {
         type: "website",
-        icon: Globe,
         label: "官方網站",
         value: "www.sharkjump.example.com",
         href: "#",
@@ -40,6 +36,55 @@ const contactInfo = [
 ]
 
 export default function EventsPage() {
+    const [events, setEvents] = useState<Event[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    // 從 API 載入活動資料
+    useEffect(() => {
+        async function loadEvents() {
+            try {
+                const result = await getCachedData('events-data-v1', async () => {
+                    const response = await fetch('/api/events')
+                    return await response.json()
+                })
+
+                if (result.success) {
+                    setEvents(result.data)
+                } else {
+                    setError('載入活動資料失敗')
+                }
+            } catch (err) {
+                console.error('載入活動資料時發生錯誤:', err)
+                setError('載入活動資料失敗')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadEvents()
+    }, [])
+
+    if (loading) {
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <div className="text-center">
+                    <p className="text-muted-foreground">載入中...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <div className="text-center">
+                    <p className="text-red-500">{error}</p>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold text-foreground mb-8 text-center flex items-center justify-center gap-2">
@@ -114,12 +159,14 @@ export default function EventsPage() {
                                         {contact.type === "line" && contact.qrcode ? (
                                             <>
                                                 <div className="w-32 h-32 mb-4 bg-white rounded-lg p-2">
-                                                    <Image
+                                                    <ImageWithLoader
                                                         src={contact.qrcode}
                                                         alt="LINE QR Code"
                                                         width={112}
                                                         height={112}
                                                         className="w-full h-full object-contain"
+                                                        containerClassName="w-full h-full"
+                                                        overlayClassName="rounded"
                                                     />
                                                 </div>
                                                 <span className="text-sm font-medium text-foreground">
@@ -129,10 +176,10 @@ export default function EventsPage() {
                           {contact.value}
                         </span>
                                             </>
-                                        ) : contact.icon ? (
+                                         ) : contact.type === "website" ? (
                                             <>
                                                 <div className="w-32 h-32 mb-4 flex items-center justify-center">
-                                                    <contact.icon className="w-32 h-32 text-primary group-hover:scale-110 transition-transform" />
+                                                    <Globe className="w-32 h-32 text-primary group-hover:scale-110 transition-transform" />
                                                 </div>
                                                 <span className="text-sm font-medium text-foreground">
                           {contact.label}

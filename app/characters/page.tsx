@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { Lock } from "lucide-react"
+import { getCachedData } from "@/lib/cache"
+import { ImageWithLoader } from "@/components/ui/image-with-loader"
 
 interface Character {
-  id: string
+  id: number
   name: string
   image: string
   description: string
@@ -17,87 +18,56 @@ interface Character {
   locked?: boolean
 }
 
-const characters: Character[] = [
-  {
-    id: "shark",
-    name: "阿鯊",
-    image: "/images/characters/shark.jpg",
-    description: "威嚴又可愛的代表",
-    fullDescription: "鯊魚是一隻可愛又勇敢的小鯊魚！\n擅長是鋼鐵尾巴和裝可愛🤍",
-    color: "bg-blue-100 hover:bg-blue-200",
-  },
-  {
-    id: "shark-2",
-    name: "學弟鯊",
-    image: "/images/characters/shark-2.jpg",
-    description: "我弟啦",
-    fullDescription: "學弟鯊把大家照顧得非常好！\n總是帶著奶茶和玉子燒一起玩耍\n🤜蝸牛✌️",
-    color: "bg-blue-100 hover:bg-blue-200",
-  },
-  {
-    id: "tamagoyaki",
-    name: "玉子燒",
-    image: "/images/characters/tamagoyaki.jpg",
-    description: "心情總是很好",
-    fullDescription: "玉子燒隨時保持著愉快的心情！\n背上的玉子燒香香的，讓大家忍不住想吃一口！",
-    color: "bg-yellow-100 hover:bg-yellow-200",
-  },
-  {
-    id: "milktea",
-    name: "奶茶",
-    image: "/images/characters/milktea.jpg",
-    description: "噗",
-    fullDescription: "奶茶身體柔軟又有彈性，非常擅長打滾！\n很喜歡爬到朋友身上撒嬌！",
-    color: "bg-amber-100 hover:bg-amber-200",
-  },
-  {
-    id: "boboli",
-    name: "宝膩",
-    image: "/images/characters/boboli.jpg",
-    description: "軟萌的妹子",
-    fullDescription: "宝膩是大家的偶像！\n喜歡吃吃喝喝，也喜歡大家！",
-    color: "bg-pink-100 hover:bg-pink-200",
-  },
-  {
-    id: "awang",
-    name: "阿汪",
-    image: "/images/characters/awang.jpg",
-    description: "忠誠的汪汪",
-    fullDescription: "阿汪是個胖胖的汪汪！\n總是在大家旁邊搗蛋！",
-    color: "bg-orange-100 hover:bg-orange-200",
-  },
-  {
-    id: "cookie",
-    name: "巧克力餅乾",
-    image: "/images/characters/choco_cookie.jpg",
-    description: "酥脆的點心",
-    fullDescription: "巧克力餅乾是一塊脆脆的餅乾！\n看起來有點酷酷的呢！",
-    color: "bg-amber-100 hover:bg-amber-200",
-  },
-  {
-    id: "ebifly",
-    name: "炸蝦",
-    image: "/images/characters/ebifurai.png",
-    description: "夢想成為偶像",
-    fullDescription: "" +
-        "炸蝦因為太硬而被吃剩，跟炸豬排為心靈相通的好朋友。\n" +
-        "羨慕在便當裏最受歡迎的章魚，希望自己有一天會被吃掉。\n" +
-        "下一步是成為 idol！",
-    color: "bg-gray-200",
-  },
-  {
-    id: "tokage",
-    name: "とかげ",
-    image: "/images/characters/tokage.png",
-    description: "來自日本的朋友",
-    fullDescription: "這個角色還沒有解鎖，敬請期待！",
-    color: "bg-gray-200",
-    locked: true,
-  },
-]
-
 export default function CharactersPage() {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
+  const [characters, setCharacters] = useState<Character[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // 從 API 載入角色資料
+  useEffect(() => {
+    async function loadCharacters() {
+      try {
+        const result = await getCachedData('characters-data-v1', async () => {
+          const response = await fetch('/api/characters')
+          return await response.json()
+        })
+
+        if (result.success) {
+          setCharacters(result.data)
+        } else {
+          setError('載入角色資料失敗')
+        }
+      } catch (err) {
+        console.error('載入角色資料時發生錯誤:', err)
+        setError('載入角色資料失敗')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadCharacters()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <p className="text-muted-foreground">載入中...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -123,12 +93,14 @@ export default function CharactersPage() {
           >
             <CardContent className={cn("p-6 text-center", character.color)}>
               <div className="relative w-20 h-20 mx-auto mb-3">
-                <Image
+                <ImageWithLoader
                   src={character.image}
                   alt={character.name}
                   width={80}
                   height={80}
                   className="object-contain"
+                  containerClassName="w-20 h-20"
+                  overlayClassName="rounded"
                 />
                 {character.locked && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded">
@@ -166,12 +138,14 @@ export default function CharactersPage() {
                 )}
               >
                 {selectedCharacter?.image && (
-                  <Image
+                  <ImageWithLoader
                     src={selectedCharacter.image}
                     alt={selectedCharacter.name}
                     width={80}
                     height={80}
                     className="object-contain"
+                    containerClassName="w-20 h-20 rounded-full overflow-hidden"
+                    overlayClassName="rounded-full"
                   />
                 )}
               </div>
