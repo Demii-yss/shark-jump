@@ -19,3 +19,7 @@ upload-to-drive/
 shark-jump-data.json
 test-sheets.js
 *.html
+
+# 部署文檔（含敏感資訊，不納入版本控管）
+DEPLOY.md
+
