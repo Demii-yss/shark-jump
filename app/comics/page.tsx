@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getCachedData } from "@/lib/cache"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const loadedComicImages = new Set<string>()
 
@@ -143,18 +144,9 @@ function ComicsContent() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-muted-foreground">載入中...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* 靜態標題 - 立即顯示 */}
       <h1 className="text-3xl font-bold text-foreground mb-8 text-center flex items-center justify-center gap-2">
         <span className="text-3xl">📚</span> 漫畫列表
       </h1>
@@ -167,7 +159,20 @@ function ComicsContent() {
               <h2 className="font-bold text-foreground">章節總覽</h2>
             </div>
             <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
-              {chapters.map((chapter) => (
+              {loading ? (
+                /* 載入中 - 顯示骨架屏 */
+                <>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <div key={index} className="px-4 py-3">
+                      <Skeleton className="h-4 w-24 mb-2" />
+                      <Skeleton className="h-3 w-32" />
+                    </div>
+                  ))}
+                </>
+              ) : (
+                /* 資料載入完成 */
+                <>
+                  {chapters.map((chapter) => (
                 <button
                   key={chapter.id}
                   onClick={() => setSelectedChapter(chapter.id)}
@@ -188,9 +193,11 @@ function ComicsContent() {
                     )}
                   >
                     {chapter.description}
-                  </div>
-                </button>
-              ))}
+                    </div>
+                  </button>
+                ))}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -200,12 +207,21 @@ function ComicsContent() {
           <div className="bg-card rounded-xl border-2 border-border overflow-hidden">
             {/* Chapter Header */}
             <div className="bg-secondary/50 px-6 py-4 border-b border-border">
-              <h2 className="text-xl font-bold text-foreground">
-                {currentChapter?.title}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                {currentChapter?.description}
-              </p>
+              {loading ? (
+                <>
+                  <Skeleton className="h-6 w-48 mb-2" />
+                  <Skeleton className="h-4 w-64" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-bold text-foreground">
+                    {currentChapter?.title}
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {currentChapter?.description}
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Comic Image */}

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { Lock } from "lucide-react"
 import { getCachedData } from "@/lib/cache"
 import { ImageWithLoader } from "@/components/ui/image-with-loader"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Character {
   id: number
@@ -49,28 +50,9 @@ export default function CharactersPage() {
     loadCharacters()
   }, [])
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-muted-foreground">載入中...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-red-500">{error}</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* 靜態內容 - 立即顯示 */}
       <h1 className="text-3xl font-bold text-foreground mb-4 text-center flex items-center justify-center gap-2">
         <span className="text-3xl">👥</span> 角色介紹
       </h1>
@@ -78,9 +60,32 @@ export default function CharactersPage() {
         認識鯊魚 JUMP 世界中的可愛角色們！點擊角色卡片查看詳細介紹。
       </p>
 
+      {/* 錯誤訊息 */}
+      {error && (
+        <div className="text-center mb-8">
+          <p className="text-red-500">{error}</p>
+        </div>
+      )}
+
       {/* Character Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
-        {characters.map((character) => (
+        {loading ? (
+          /* 載入中 - 顯示骨架屏 */
+          <>
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Card key={index} className="border-2">
+                <CardContent className="p-6 text-center">
+                  <Skeleton className="w-20 h-20 rounded mx-auto mb-3" />
+                  <Skeleton className="h-5 w-24 mx-auto mb-2" />
+                  <Skeleton className="h-4 w-32 mx-auto" />
+                </CardContent>
+              </Card>
+            ))}
+          </>
+        ) : (
+          /* 資料載入完成 */
+          <>
+            {characters.map((character) => (
           <Card
             key={character.id}
             onClick={() => !character.locked && setSelectedCharacter(character)}
@@ -114,16 +119,20 @@ export default function CharactersPage() {
               </p>
             </CardContent>
           </Card>
-        ))}
+            ))}
 
-        {/* Coming Soon Card */}
-        <Card className="border-2 border-dashed border-border opacity-60">
-          <CardContent className="p-6 text-center bg-muted/30">
-            <span className="text-5xl block mb-3">❓</span>
-            <h3 className="font-bold text-foreground">還有更多...</h3>
-            <p className="text-sm text-muted-foreground mt-1">敬請期待</p>
-          </CardContent>
-        </Card>
+            {/* Coming Soon Card */}
+            {!loading && (
+              <Card className="border-2 border-dashed border-border opacity-60">
+                <CardContent className="p-6 text-center bg-muted/30">
+                  <span className="text-5xl block mb-3">❓</span>
+                  <h3 className="font-bold text-foreground">還有更多...</h3>
+                  <p className="text-sm text-muted-foreground mt-1">敬請期待</p>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )}
       </div>
 
       {/* Character Detail Dialog */}

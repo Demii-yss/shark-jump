@@ -8,6 +8,7 @@ import Link from "next/link"
 import { BookOpen, Calendar, User, Megaphone } from "lucide-react"
 import { getCachedData } from "@/lib/cache"
 import { ImageWithLoader } from "@/components/ui/image-with-loader"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface NewsItem {
     id: number
@@ -83,29 +84,9 @@ export default function HomePage() {
         loadNews()
     }, [])
 
-    if (loading) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="text-center">
-                    <p className="text-muted-foreground">載入中...</p>
-                </div>
-            </div>
-        )
-    }
-
-    if (error) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="text-center">
-                    <p className="text-red-500">{error}</p>
-                </div>
-            </div>
-        )
-    }
-
     return (
         <div className="container mx-auto px-4 py-8">
-            {/* Hero Section */}
+            {/* Hero Section - 靜態內容立即顯示 */}
             <div className="text-center mb-12">
                 <div className="inline-block mb-4">
                     <ImageWithLoader
@@ -132,7 +113,36 @@ export default function HomePage() {
                     <span className="text-2xl">📰</span> 最新消息
                 </h2>
 
-                {newsItems.map((item, index) => {
+                {/* 錯誤訊息 */}
+                {error && (
+                    <div className="text-center">
+                        <p className="text-red-500">{error}</p>
+                    </div>
+                )}
+
+                {loading ? (
+                    /* 載入中 - 顯示骨架屏 */
+                    <>
+                        {Array.from({ length: 3 }).map((_, index) => (
+                            <Card key={index} className="border-2">
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Skeleton className="h-6 w-20" />
+                                        <Skeleton className="h-4 w-24" />
+                                    </div>
+                                    <Skeleton className="h-6 w-3/4" />
+                                </CardHeader>
+                                <CardContent>
+                                    <Skeleton className="h-4 w-full mb-2" />
+                                    <Skeleton className="h-4 w-2/3" />
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </>
+                ) : (
+                    /* 資料載入完成 */
+                    <>
+                        {newsItems.map((item, index) => {
                     // 如果是彈窗類型的卡片
                     if (item.showDialog) {
                         return (
@@ -188,6 +198,8 @@ export default function HomePage() {
                         </Link>
                     )
                 })}
+                    </>
+                )}
             </div>
 
             {/* News Detail Dialog */}

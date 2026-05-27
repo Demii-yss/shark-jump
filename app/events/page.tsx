@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, MapPin, Clock, MessageCircle, Globe } from "lucide-react"
 import { getCachedData } from "@/lib/cache"
 import { ImageWithLoader } from "@/components/ui/image-with-loader"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Event {
     id: number
@@ -65,28 +66,9 @@ export default function EventsPage() {
         loadEvents()
     }, [])
 
-    if (loading) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="text-center">
-                    <p className="text-muted-foreground">載入中...</p>
-                </div>
-            </div>
-        )
-    }
-
-    if (error) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="text-center">
-                    <p className="text-red-500">{error}</p>
-                </div>
-            </div>
-        )
-    }
-
     return (
         <div className="container mx-auto px-4 py-8">
+            {/* 靜態標題 - 立即顯示 */}
             <h1 className="text-3xl font-bold text-foreground mb-8 text-center flex items-center justify-center gap-2">
                 <span className="text-3xl">🎉</span> 活動資訊
             </h1>
@@ -99,7 +81,44 @@ export default function EventsPage() {
                         活動公告
                     </h2>
 
-                    {events.map((event) => (
+                    {/* 錯誤訊息 */}
+                    {error && (
+                        <div className="text-center mb-4">
+                            <p className="text-red-500">{error}</p>
+                        </div>
+                    )}
+
+                    {loading ? (
+                        /* 載入中 - 顯示骨架屏 */
+                        <>
+                            {Array.from({ length: 2 }).map((_, index) => (
+                                <Card key={index} className="border-2 mb-4">
+                                    <CardHeader className="bg-secondary/30">
+                                        <Skeleton className="h-6 w-24 mb-2" />
+                                        <Skeleton className="h-6 w-3/4 mb-2" />
+                                        <div className="flex gap-4">
+                                            <Skeleton className="h-4 w-32" />
+                                            <Skeleton className="h-4 w-32" />
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="pt-4">
+                                        <Skeleton className="h-4 w-full mb-2" />
+                                        <Skeleton className="h-4 w-full mb-2" />
+                                        <Skeleton className="h-4 w-2/3 mb-4" />
+                                        <div className="bg-muted rounded-lg p-4">
+                                            <Skeleton className="h-5 w-24 mb-2" />
+                                            <Skeleton className="h-4 w-full mb-1" />
+                                            <Skeleton className="h-4 w-full mb-1" />
+                                            <Skeleton className="h-4 w-3/4" />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </>
+                    ) : (
+                        /* 資料載入完成 */
+                        <>
+                            {events.map((event) => (
                         <Card key={event.id} className="border-2 overflow-hidden">
                             <CardHeader className="bg-secondary/30">
                                 <div className="flex items-center justify-between flex-wrap gap-2">
@@ -130,12 +149,14 @@ export default function EventsPage() {
                                         ))}
                                     </ul>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </>
+                    )}
                 </section>
 
-                {/* Contact Section */}
+                {/* Contact Section - 靜態內容，無需載入 */}
                 <section>
                     <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
                         <MessageCircle className="w-6 h-6 text-primary" />
